@@ -137,8 +137,6 @@ field_p = complex(zeros(length(Field),1));
 rfield_p = complex(zeros(length(Field),1));
 lfield_p = complex(zeros(length(Field),1));
 NewfieldRaw = complex(zeros(length(Field),1));
-rNewfieldRaw = complex(zeros(length(Field),1));
-lNewfieldRaw = complex(zeros(length(Field),1));
 IROldPart = complex(zeros(1,1));
 OldOldJ = complex(zeros(length(Field),1));
 
@@ -223,8 +221,9 @@ for step=1:steps
     
     %NewfieldRaw(:,1) = M \ D;
     rNewfieldRaw(:,1) = rtridag(C,A,B,D);
-    lNewfieldRaw(:,1) = rtridag(C,A,B,D);
-    NewfieldRaw = (rNewfieldRaw + lNewfieldRaw)/2;
+    rfield_p = rtridag(C,A,B,D);
+    lfield_p = ltridag(C,A,B,D);
+    field_p = (rfield_p + lfield_p)/2;
     
     Field(:,1) = NewfieldRaw(:,1);
     fmax(step+1) = max(abs(Field(:,1)));
