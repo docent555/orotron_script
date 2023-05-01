@@ -1,7 +1,10 @@
 .vs/
 results/
+orotron/
 *.exe
 *.log
 *.txt
 *.dat
 
+*.prj
+*.asv

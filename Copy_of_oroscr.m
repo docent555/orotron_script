@@ -70,7 +70,7 @@ DeltaT = TAxis(2) - TAxis(1);
 SQR2M2 = 2.828427124746190;
 SQR2D2 = 0.707106781186548;
 SQRDT = sqrt(DeltaT);
-% SQRDZ = DeltaZ.^2;
+SQRDZ = DeltaZ*DeltaZ;
 
 % C0 = -1i;
 C0 = 1i;
@@ -117,10 +117,10 @@ IDX = @(j) (j + 2);
 
 fmax = zeros(length(TAxis), 1);
 
-SHOW = 1;
-if SHOW == 1
-    [lhr, lha, hFig] = makeFig(ZAxis, TAxis);
-end
+% SHOW = 1;
+% if SHOW == 1
+%     [lhr, lha, hFig] = makeFig(ZAxis, TAxis);
+% end
 
 jout = 1;
 OUT.OUTB(:, jout) = Field(IZ,1);
@@ -131,36 +131,41 @@ theta = zeros(length(ZAxis), Ne);
 steps = length(TAxis) - 1;
 
 field = complex(zeros(length(Field),1));
-rfield = complex(zeros(length(Field),1));
-lfield = complex(zeros(length(Field),1));
+tmp = complex(zeros(length(Field),1));
 field_p = complex(zeros(length(Field),1));
 rfield_p = complex(zeros(length(Field),1));
 lfield_p = complex(zeros(length(Field),1));
 NewfieldRaw = complex(zeros(length(Field),1));
+rNewfieldRaw = complex(zeros(length(Field),1));
+lNewfieldRaw = complex(zeros(length(Field),1));
 IROldPart = complex(zeros(1,1));
 OldOldJ = complex(zeros(length(Field),1));
 
 timerVal = tic;
 
+fprintf('\n');
+% tmp = Field;
 for step=1:steps
     
     field(:,1) = Field(:,1);
+%     field = tmp;
     
-    if SHOW == 1
-        lHandleB.YData = abs(Field(:,1));
-        lHandleJ.YData = abs(J(:,1));
-        lhr.YData(1:step) = fmax(1:step);
-        lhr.XData(1:step) = TAxis(1:step);
-        lha.YData = abs(Field);
-        drawnow
-    end
-    
-    %     J = zeros(length(ZAxis),1);
-    theta(:,:) = pendulumODE(field(:,1), ZAxis(:,1), th0(1,:), Delta);
-    J(:,1) = I * 2 / Ne * sum(exp(-1i*theta), 2);
-    
-    if (step ~= 1) && (mod(step-1,INTERVALT) == 0)
-        OUT.OUTJ(:,jout) = J(IZ,1);
+%     if SHOW == 1
+%         lHandleB.YData = abs(Field(:,1));
+%         lHandleJ.YData = abs(J(:,1));
+%         lhr.YData(1:step) = fmax(1:step);
+%         lhr.XData(1:step) = TAxis(1:step);
+%         lha.YData = abs(Field);
+%         drawnow
+%     end
+
+
+%     J = zeros(length(ZAxis),1);
+theta(:,:) = pendulumODE(field(:,1), ZAxis(:,1), th0(1,:), Delta);
+J(:,1) = I * 2 / Ne * sum(exp(-1i*theta), 2);
+
+if (step ~= 1) && (mod(step-1,INTERVALT) == 0)
+    OUT.OUTJ(:,jout) = J(IZ,1);
     end
     
     OldFNz(IDX(step - 1)) =  field(end);
@@ -168,7 +173,7 @@ for step=1:steps
     
     OldSigmaNz = -(kpar2(end)/6 + C0/3/DeltaT) * OldFNz(IDX(step - 1)) ...
         + (C0/3/DeltaT - kpar2(end)/6) * OldFNz(IDX(step - 2)) ...
-        + 0.166666666666667*(J(end) + OldOldJ(end-1)) - OldOldSigmaNz;
+        + 0.166666666666667*(J(end) + OldOldJ(end)) - OldOldSigmaNz;
     OldSigmaNzm1 = -(kpar2(end - 1)/6 + C0/3/DeltaT) * OldFNzm1(IDX(step - 1)) ...
         + (C0/3/DeltaT - kpar2(end - 1)/6) * OldFNzm1(IDX(step - 2)) ...
         + 0.166666666666667*(J(end-1) + OldOldJ(end-1)) - OldOldSigmaNzm1;
@@ -196,11 +201,25 @@ for step=1:steps
     end
     
     D(1) = 0;
-    D_2_Nzm1_part = 2 * (1 + C0 * DeltaZ.^2/DeltaT - DeltaZ.^2 * kpar2(2:end-1)/2) .* field(2:end - 1)...
+    D_2_Nzm1_part = 2 * (1 + C0 * SQRDZ/DeltaT - SQRDZ * kpar2(2:end-1)/2) .* field(2:end - 1)...
         - (field(1:end - 2) + field(3:end));
-    D(2:end - 1) = D_2_Nzm1_part + DeltaZ.^2 * (2*J(2:end - 1) - OldOldJ(2:end - 1));
+    D(2:end - 1) = D_2_Nzm1_part + SQRDZ * (2*J(2:end - 1) - OldOldJ(2:end - 1));
     D_end_part = -C2*(IR + 0.666666666666667 * DeltaT / SQRDT * u(step - 1));
     D(end) = D_end_part - C2*(1.333333333333333 * WR(IDX(step)) * SQRDT);
+    
+%     if step == 3
+%         tmp = SQRDZ * (2*J(2:end - 1) - OldOldJ(2:end - 1));
+%         tmp=[real(tmp) imag(tmp)];
+%         
+%         WR(IDX(step))
+%         %     tmp = ZAxis(:);
+%         %     for i=1:Ne
+%         %         tmp = [tmp theta(:,i)];
+%         %     end
+%         % tmp = th0(1,:)'
+%         save('test.dat','tmp','-ascii')
+%         pause
+%     end    
     
     %     field_p = M \ D;
     rfield_p = rtridag(C,A,B,D);
@@ -215,35 +234,20 @@ for step=1:steps
     WR(IDX(step)) = WR_step_part + ...
         DeltaZ * (0.166666666666667 * (2 * Jp(end) + 2 * J(end) + Jp(end - 1) + J(end - 1)));
     
-    D(2:end - 1) = D_2_Nzm1_part + DeltaZ.^2 * (Jp(2:end - 1) + J(2:end - 1));
+    D(2:end - 1) = D_2_Nzm1_part + SQRDZ * (Jp(2:end - 1) + J(2:end - 1));
     D(end) = D_end_part - C2*(1.333333333333333 * WR(IDX(step)) * SQRDT);
     
     
     %NewfieldRaw(:,1) = M \ D;
     rNewfieldRaw(:,1) = rtridag(C,A,B,D);
-    rfield_p = rtridag(C,A,B,D);
-    lfield_p = ltridag(C,A,B,D);
-    field_p = (rfield_p + lfield_p)/2;
+    lNewfieldRaw(:,1) = rtridag(C,A,B,D);
+    NewfieldRaw = (rNewfieldRaw + lNewfieldRaw)/2;
     
     Field(:,1) = NewfieldRaw(:,1);
     fmax(step+1) = max(abs(Field(:,1)));
-    
+       
     OldOldJ(:,1) = J(:,1);
-    
-    %     if step == 5
-    %         %         plot(ZAxis,real(Field))
-    %         %         hold on
-    %         %         plot(ZAxis,imag(Field))
-    %
-    %         plot(ZAxis,abs(Field))
-    %
-    %         C0 * DeltaZ.^2 / DeltaT
-    %
-    %         tmp=[ZAxis real(Field) imag(Field)];
-    %         save('test.dat','tmp','-ascii')
-    %         pause
-    %     end
-    
+   
     k = step + 1;
     
     if mod(step,INTERVALT) == 0
@@ -260,17 +264,30 @@ for step=1:steps
     %     end
     %     title(app.UIAxes, sprintf('B time=%8.5f',TAxis(k)));
     %     app.Time0Label.Text = sprintf('Time =%8.4f',TAxis(k));
-    fprintf(['\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
-        '\b\b\b\b\b\b\b\b\b\bTime = %8.4f   Bmax = %15.10f'], TAxis(k), fmax(k));
+%     fprintf(['\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...        
+%         '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
+%         '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
+%         'Step = %8i   Time = %8.4f   Bmax = %15.10f   Jmax = %15.10f'], step, TAxis(k), fmax(k), max(abs(J(:,1))));
+
+fprintf(['\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
+         '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
+         '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
+         '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
+         'Step = %8i   Time = %8.4f   Bmax = %15.10f   Jmax = %15.10f'],...
+         step, TAxis(k), fmax(k), max(abs(J(:,1))));
 end
 
 OUT.OUTJ(:,jout) = J(IZ,1); % для последнего jout см. стр.212
 
-fprintf(" \n\n");
+fprintf("\n\n\n");
 
 ExecutionTime = toc(timerVal);
 
-fprintf("ExecitionTime = %8.4f [s]\n", ExecutionTime);
+hours = fix(ExecutionTime/3600);
+minutes = fix((ExecutionTime - fix(hours*3600))/60);
+seconds = ExecutionTime - hours*3600 - minutes*60;
+
+fprintf("ExecitionTime = %8.4f [h]   %8.4f [m]   %8.4f [s]\n", hours, minutes, seconds);
 
 OUT.ZAxis(:,1) = ZAxis(IZ,1);
 OUT.TAxis(:,1) = TAxisNew(:,1);

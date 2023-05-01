@@ -23,6 +23,9 @@ ZEND = 0.5;
 IND1 = (ZAxis > ZBEG & ZAxis < ZEND);
 InitialField(IND1,1) = 0.001*sin(pi * (ZAxis(IND1) - ZBEG) / (ZEND - ZBEG)).^2;
 
+infield=[real(InitialField) imag(InitialField)];
+save('init_field.in','infield','-ascii')
+
 INTERVALT = fix(size(TAxis,1)/500);
 INTERVALZ = fix(size(ZAxis,1)/500);
 % INTERVALT = 1;
