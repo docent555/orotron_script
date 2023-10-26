@@ -1,4 +1,4 @@
-function orotron(NNe, LLz, TTend, DDelta, II, ddz, ddt) %#codegen
+function gyrotron(NNe, LLz, TTend, DDelta, II, ddz, ddt, tol) %#codegen
 
 if nargin < 7
     fprintf('USAGE: orotron Ne Lz Tend Delta I dz dt\n')
@@ -22,6 +22,7 @@ ZBEG = 0;
 ZEND = 0.5;
 IND1 = (ZAxis > ZBEG & ZAxis < ZEND);
 InitialField(IND1,1) = 0.001*sin(pi * (ZAxis(IND1) - ZBEG) / (ZEND - ZBEG)).^2;
+% InitialField(IND1,1) = sin(pi * (ZAxis(IND1) - ZBEG) / (ZEND - ZBEG)).^2;
 
 infield=[real(InitialField) imag(InitialField)];
 save('init_field.in','infield','-ascii')
@@ -46,8 +47,9 @@ IN.I = I;
 IN.INTERVALT = INTERVALT;
 IN.INTERVALZ = INTERVALZ;
 IN.InitialField = InitialField;
+IN.tol = tol
 
-OUT = oroscr(IN);
+OUT = gyroscr(IN);
 
 RES.Ne = IN.Ne;
 RES.Tend = Tend;
