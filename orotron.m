@@ -1,4 +1,4 @@
-function gyrotron(NNe, LLz, TTend, DDelta, II, ddz, ddt, tol) %#codegen
+function orotron(NNe, LLz, TTend, DDelta, II, ddz, ddt, tol) %#codegen
 
 if nargin < 7
     fprintf('USAGE: orotron Ne Lz Tend Delta I dz dt\n')

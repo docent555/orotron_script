@@ -1,4 +1,4 @@
-function OUT = gyroscr(IN) %#codegen
+function OUT = oroscr(IN) %#codegen
 
 fprintf('\nTime')
 
