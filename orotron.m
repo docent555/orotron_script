@@ -38,8 +38,8 @@ end
 ZBEG = 0;
 ZEND = 0.5;
 IND1 = (ZAxis > ZBEG & ZAxis < ZEND);
-InitialField(IND1,1) = 0.001*sin(pi * (ZAxis(IND1) - ZBEG) / (ZEND - ZBEG)).^2;
-% InitialField(IND1,1) = sin(pi * (ZAxis(IND1) - ZBEG) / (ZEND - ZBEG)).^2;
+% InitialField(IND1,1) = 0.001*sin(pi * (ZAxis(IND1) - ZBEG) / (ZEND - ZBEG)).^2;
+InitialField(IND1,1) = sin(pi * (ZAxis(IND1) - ZBEG) / (ZEND - ZBEG)).^2;
 % InitialField = 10*ones(length(ZAxis),1) + 10*1i*ones(length(ZAxis),1);
 
 infield=[real(InitialField) imag(InitialField)];
@@ -84,7 +84,7 @@ for i = 1:OUTNt
     OUTTAxis(i) = (i-1)*INTT*dt;
 end
 
-[OUTF, OUTJ] = gyroscr(Nz, Nt, Ne, ZAxis, TAxis, Delta, Ic, dt, dz, tol, INTT, INTZ, OUTNz, OUTNt, InitialField);
+[OUTF, OUTJ] = oroscr(Nz, Nt, Ne, ZAxis, TAxis, Delta, Ic, dt, dz, tol, INTT, INTZ, OUTNz, OUTNt, InitialField);
 
 % plot(RES.ZAxis(:,1), abs(RES.OUTF(:,end)))
 

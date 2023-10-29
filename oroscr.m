@@ -32,7 +32,7 @@ end
 
 Field(:,1) = InitialField;
 kpar2 = zeros(length(ZAxis),1);
-% N = length(ZAxis);
+N = length(ZAxis);
 A = complex(zeros(Nz,1));
 B = complex(zeros(Nz-1,1));
 C = complex(zeros(Nz-1,1));
@@ -61,7 +61,7 @@ B(2:end) = 1.0D0;
 C(1:end-1) = 1.0D0;
 C(end) = 4.0D0/3.0D0*C2*WNzm1*SQRDT;
 
-% M = spdiags([[C; 0] A [0 ;B]], -1:1, N, N);
+M = spdiags([[C; 0] A [0 ;B]], -1:1, N, N);
 
 jout = 1;
 OUTB(:, jout) = Field(IZ,1);
@@ -126,14 +126,14 @@ for step=1:steps
     elseif step == 2
         IR = 4.0D0/3.0D0 * SQRDT * (u(0)*(1 - SQR2D2) + u(1)*(SQR2M2 - 2.5D0));
     else
-%         j = 1:step-2;
-%         IR = 4.0D0/3.0D0 * SQRDT * (u(0)*((step - 1).^(1.5) - (step - 1.5)*sqrt(step))...
-%             + sum(u(j).*((step - j - 1).^(1.5) - 2*(step - j).^(1.5) + (step - j + 1).^(1.5)))...
-%             + u(step - 1)*(SQR2M2 - 2.5));
-        IR = 4.0D0/3.0D0 * SQRDT * (u(0)*((step - 1.0D0).^(1.5) - (step - 1.5D0)*sqrt(step)) + u(step - 1)*(SQR2M2 - 2.5D0));
-        for j = 1:step-2
-            IR = IR + 4.0D0/3.0D0 * SQRDT * (u(j).*((step - j - 1.0D0).^(1.5) - 2.0D0*(step - j).^(1.5) + (step - j + 1.0D0).^(1.5)));
-        end
+        j = 1:step-2;
+        IR = 4.0D0/3.0D0 * SQRDT * (u(0)*((step - 1).^(1.5) - (step - 1.5)*sqrt(step))...
+            + sum(u(j).*((step - j - 1).^(1.5) - 2*(step - j).^(1.5) + (step - j + 1).^(1.5)))...
+            + u(step - 1)*(SQR2M2 - 2.5));
+%         IR = 4.0D0/3.0D0 * SQRDT * (u(0)*((step - 1.0D0).^(1.5) - (step - 1.5D0)*sqrt(step)) + u(step - 1)*(SQR2M2 - 2.5D0));
+%         for j = 1:step-2
+%             IR = IR + 4.0D0/3.0D0 * SQRDT * (u(j).*((step - j - 1.0D0).^(1.5) - 2.0D0*(step - j).^(1.5) + (step - j + 1.0D0).^(1.5)));
+%         end
     end    
     
     D(1) = 0;
@@ -145,10 +145,10 @@ for step=1:steps
         + WNz * field(end) + WR(IDX(step-1))) * exp(CR * dt));
     
     % nesamosoglasovannoe pole
-    %     field_p = M \ D;
-    rfield_p = rtridag(C,A,B,D);
-    lfield_p = ltridag(C,A,B,D);
-    field_p = (rfield_p + lfield_p)/2.0D0;        
+    field_p = M \ D;
+%     rfield_p = rtridag(C,A,B,D);
+%     lfield_p = ltridag(C,A,B,D);
+%     field_p = (rfield_p + lfield_p)/2.0D0;        
     
     maxfield = max(abs(field(:,1)));    
     while 1        
@@ -168,10 +168,10 @@ for step=1:steps
                
         
         % samosoglasovannoe pole
-        %field_p(:,1) = M \ D;
-        rfield_p(:,1) = rtridag(C,A,B,D);
-        lfield_p(:,1) = rtridag(C,A,B,D);
-        field_p = (rfield_p + lfield_p)/2.0D0;
+        field_p(:,1) = M \ D;
+%         rfield_p(:,1) = rtridag(C,A,B,D);
+%         lfield_p(:,1) = rtridag(C,A,B,D);
+%         field_p = (rfield_p + lfield_p)/2.0D0;
         
         
         maxfield_p = max(abs(field_p(:,1)));
