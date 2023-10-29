@@ -47,7 +47,7 @@ SQRDZ = dz*dz;
 C0 = -1i;
 % C0 = 1i;
 CR = 0;
-C2 = 1/sqrt(1i*pi);
+C2 = 1.0D0/sqrt(1i*pi);
 % C2 = 1/sqrt(-1i*pi);
 WNz = -((2.0D0/3.0D0*C0*dz/dt + kpar2(end)*dz/3.0D0) - 1.0D0/dz);
 WNzm1 = -((C0/3.0D0*dz/dt + kpar2(end-1)*dz/6.0D0) + 1.0D0/dz);
@@ -102,18 +102,7 @@ for step=1:steps
         lhr.XData(1:step) = TAxis(1:step);
         lha.YData = abs(field);
         drawnow
-    end        
-    
-%     C2mSQRDTm4d3 = C2 * SQRDT * 4.0D0 / 3.0D0;
-%     SQRDZd2 = SQRDZ / 2.0D0;
-%     C0mSQRDZdDeltaT = C0 * SQRDZ / dt;
-%     SQRDTm4d3 = 4.0D0 / 3.0D0 * SQRDT;
-%     SQRDTm2d3 = 2.0D0 / 3.0D0 * SQRDT;
-%     DeltaZmC0m2d3dDeltaT = dz / dt * C0 * 2.0D0 / 3.0D0;
-%     DeltaZmC0d3dDeltaT = dz / dt * C0 / 3.0D0;
-%     DeltaZd2 = dz / 2.0D0;
-%     DeltaZd3 = dz / 3.0D0;
-%     DeltaZd6 = dz / 6.0D0;
+    end           
  
     WR(IDX(step)) = dz * ((C0 * 2.0D0/3.0D0/dt - kpar2(end)/3.0D0) * FNz(IDX(step-1))...
         + (C0/3.0D0/dt - kpar2(end - 1)/6.0D0) * FNzm1(IDX(step-1))...
@@ -138,10 +127,10 @@ for step=1:steps
     
     D(1) = 0;
     %         D(1) = IN.TimeAmp * exp(1i * IN.TimeFreq * AxisTau(step));
-    D(2:end - 1) = SQRDZ*(2.0D0*cu(2:end-1)) ...
-        + 2.0D0 * (1.0D0 + C0 * SQRDZ/dt - SQRDZ * kpar2(2:end-1)/2.0D0) .* field(2:end - 1)...
+    D(2:end - 1) = SQRDZ * (2.0D0*cu(2:end-1)) ...
+        + 2.0D0 * (1.0D0 + C0 * SQRDZ/dt - SQRDZ * kpar2(2:end-1) / 2.0D0) .* field(2:end - 1)...
         - (field(1:end - 2) + field(3:end));
-    D(end) = -C2 *(IR + 4.0D0/3.0D0 * WR(IDX(step)) * SQRDT + 2.0D0/3.0D0 * SQRDT * (WNzm1 * field(end - 1)...
+    D(end) = -C2 * (IR + 4.0D0/3.0D0 * WR(IDX(step)) * SQRDT + 2.0D0 / 3.0D0 * SQRDT * (WNzm1 * field(end - 1)...
         + WNz * field(end) + WR(IDX(step-1))) * exp(CR * dt));
     
     % nesamosoglasovannoe pole
@@ -161,9 +150,9 @@ for step=1:steps
             + 1.0D0/6.0D0 * (2.0D0 * cu_p(end) + 2.0D0 * cu(end) + cu_p(end - 1) + cu(end - 1)) - (2.0D0 * SigmaNz(IDX(step-1)) + SigmaNzm1(IDX(step-1))));        
         
         D(2:end - 1) = SQRDZ * (cu_p(2:end - 1) + cu(2:end - 1)) ...
-            + 2.0D0 * (1 + C0 * SQRDZ / dt - SQRDZ * kpar2(2:end - 1) / 2.0D0).*field(2:end - 1)...
+            + 2.0D0 * (1.0D0 + C0 * SQRDZ / dt - SQRDZ * kpar2(2:end - 1) / 2.0D0).*field(2:end - 1)...
             - (field(1:end - 2) + field(3:end));
-        D(end) = -C2*(IR + 4.0D0/3.0D0 * WR(IDX(step)) * SQRDT + 2.0D0/3.0D0 * SQRDT * (WNzm1 * field(end - 1)...
+        D(end) = -C2 * (IR + 4.0D0/3.0D0 * WR(IDX(step)) * SQRDT + 2.0D0/3.0D0 * SQRDT * (WNzm1 * field(end - 1)...
             + WNz * field(end) + WR(IDX(step-1))) * exp(CR * dt));
                
         
