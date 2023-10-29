@@ -22,20 +22,6 @@ cu = zeros(length(ZAxis),1);
 OUTB = zeros(OUTNz, OUTNt);
 OUTJ = zeros(OUTNz, OUTNt);
 
-% ZAxis = zeros(length(IN.ZAxis),1);
-% TAxis = zeros(length(IN.TAxis),1);
-% InitialField = complex(zeros(length(IN.InitialField),1));
-
-% ZAxis(:,1) = IN.ZAxis;
-% TAxis(:,1) = IN.TAxis;
-% INTT = IN.INTT;
-% INTZ = IN.INTZ;
-% Delta = IN.Delta;
-% Ic = IN.Ic;
-% Ne = IN.Ne;
-% InitialField(:,1) = IN.InitialField(:,1);
-% tol = IN.tol;
-
 if INTZ > 1
     IZ = 0:INTZ:length(ZAxis);
     IZ(1) = 1;
@@ -44,35 +30,13 @@ else
     IZ = 1:INTZ:length(ZAxis);
 end
 
-% if INTT > 1 && INTZ > 1
-%     TAxisNew = zeros(fix(length(TAxis(:,1))/INTT)+1,1);
-%     OUT.OUTJ = complex(zeros(SIZEZ,fix(length(TAxis(:,1))/INTT)+1));
-%     OUT.OUTB = complex(zeros(SIZEZ,fix(length(TAxis(:,1))/INTT)+1));
-% elseif INTT ==1 && INTZ > 1
-%     TAxisNew = zeros(fix(length(TAxis(:,1))/INTT),1);
-%     OUT.OUTJ = complex(SIZEZ,fix(length(TAxis(:,1))/INTT));
-%     OUT.OUTB = complex(SIZEZ,fix(length(TAxis(:,1))/INTT));
-% elseif INTT > 1 && INTZ == 1
-%     TAxisNew = zeros(fix(length(TAxis(:,1))/INTT)+1,1);
-%     OUT.OUTJ = complex(zeros(size(InitialField,1),fix(length(TAxis(:,1))/INTT)+1));
-%     OUT.OUTB = complex(zeros(size(InitialField,1),fix(length(TAxis(:,1))/INTT)+1));
-% else % (INTT == 1) && (INTZ == 1)
-%     TAxisNew = zeros(fix(length(TAxis(:,1))),1);
-%     OUT.OUTJ = complex(zeros(size(InitialField,1),length(TAxis(:,1))));
-%     OUT.OUTB = complex(zeros(size(InitialField,1),length(TAxis(:,1))));
-% end
-% 
-% OUT.ZAxis = zeros(length(IZ),1);
-% OUT.TAxis = zeros(length(TAxisNew),1);
-
-% step = 1;
 Field(:,1) = InitialField;
-% TAxisNew(1,1) = TAxis(1,1);
-
 kpar2 = zeros(length(ZAxis),1);
-
-% dz = ZAxis(2) - ZAxis(1);
-% dt = TAxis(2) - TAxis(1);
+% N = length(ZAxis);
+A = complex(zeros(Nz,1));
+B = complex(zeros(Nz-1,1));
+C = complex(zeros(Nz-1,1));
+D = complex(zeros(Nz,1));
 
 % SQR2 = sqrt(2.0D0);
 SQR2M2 = 2.828427124746190;
@@ -83,26 +47,17 @@ SQRDZ = dz*dz;
 C0 = -1i;
 % C0 = 1i;
 CR = 0;
-
+C2 = 1/sqrt(1i*pi);
+% C2 = 1/sqrt(-1i*pi);
 WNz = -((2.0D0/3.0D0*C0*dz/dt + kpar2(end)*dz/3.0D0) - 1.0D0/dz);
 WNzm1 = -((C0/3.0D0*dz/dt + kpar2(end-1)*dz/6.0D0) + 1.0D0/dz);
 
-C2 = 1/sqrt(1i*pi);
-% C2 = 1/sqrt(-1i*pi);
-
-N = length(ZAxis);
-A = complex(zeros(N,1));
-B = complex(zeros(N-1,1));
-C = complex(zeros(N-1,1));
-D = complex(zeros(N,1));
 
 A(1) = 1.0D0;
 A(2:end-1) = -2.0D0*(1.0D0 - dz/dt*C0*dz - dz*kpar2(2:end-1)*dz/2.0D0);
 A(end) = 1.0D0 + 4.0D0/3.0D0*C2*WNz*SQRDT;
-
 B(1) = 0;
 B(2:end) = 1.0D0;
-
 C(1:end-1) = 1.0D0;
 C(end) = 4.0D0/3.0D0*C2*WNzm1*SQRDT;
 
@@ -175,7 +130,7 @@ for step=1:steps
 %         IR = 4.0D0/3.0D0 * SQRDT * (u(0)*((step - 1).^(1.5) - (step - 1.5)*sqrt(step))...
 %             + sum(u(j).*((step - j - 1).^(1.5) - 2*(step - j).^(1.5) + (step - j + 1).^(1.5)))...
 %             + u(step - 1)*(SQR2M2 - 2.5));
-        IR = 4.0D0/3.0D0 * SQRDT * (u(0)*((step - 1.0D0).^(1.5) - (step - 1.5D0)*sqrt(step)) + u(step - 1.0D0)*(SQR2M2 - 2.5D0));
+        IR = 4.0D0/3.0D0 * SQRDT * (u(0)*((step - 1.0D0).^(1.5) - (step - 1.5D0)*sqrt(step)) + u(step - 1)*(SQR2M2 - 2.5D0));
         for j = 1:step-2
             IR = IR + 4.0D0/3.0D0 * SQRDT * (u(j).*((step - j - 1.0D0).^(1.5) - 2.0D0*(step - j).^(1.5) + (step - j + 1.0D0).^(1.5)));
         end
@@ -183,8 +138,8 @@ for step=1:steps
     
     D(1) = 0;
     %         D(1) = IN.TimeAmp * exp(1i * IN.TimeFreq * AxisTau(step));
-    D(2:end - 1) = dz*dz*(2.0D0*cu(2:end-1)) ...
-        + 2.0D0 * (1.0D0 + C0 * dz*dz/dt - dz*dz * kpar2(2:end-1)/2.0D0) .* field(2:end - 1)...
+    D(2:end - 1) = SQRDZ*(2.0D0*cu(2:end-1)) ...
+        + 2.0D0 * (1.0D0 + C0 * SQRDZ/dt - SQRDZ * kpar2(2:end-1)/2.0D0) .* field(2:end - 1)...
         - (field(1:end - 2) + field(3:end));
     D(end) = -C2 *(IR + 4.0D0/3.0D0 * WR(IDX(step)) * SQRDT + 2.0D0/3.0D0 * SQRDT * (WNzm1 * field(end - 1)...
         + WNz * field(end) + WR(IDX(step-1))) * exp(CR * dt));
@@ -205,8 +160,8 @@ for step=1:steps
             + (C0 / 3.0D0 / dt - kpar2(end - 1) / 6.0D0)*field(end - 1)...
             + 1.0D0/6.0D0 * (2.0D0 * cu_p(end) + 2.0D0 * cu(end) + cu_p(end - 1) + cu(end - 1)) - (2.0D0 * SigmaNz(IDX(step-1)) + SigmaNzm1(IDX(step-1))));        
         
-        D(2:end - 1) = dz*dz * (cu_p(2:end - 1) + cu(2:end - 1)) ...
-            + 2.0D0 * (1 + C0 * dz*dz / dt - dz*dz * kpar2(2:end - 1) / 2.0D0).*field(2:end - 1)...
+        D(2:end - 1) = SQRDZ * (cu_p(2:end - 1) + cu(2:end - 1)) ...
+            + 2.0D0 * (1 + C0 * SQRDZ / dt - SQRDZ * kpar2(2:end - 1) / 2.0D0).*field(2:end - 1)...
             - (field(1:end - 2) + field(3:end));
         D(end) = -C2*(IR + 4.0D0/3.0D0 * WR(IDX(step)) * SQRDT + 2.0D0/3.0D0 * SQRDT * (WNzm1 * field(end - 1)...
             + WNz * field(end) + WR(IDX(step-1))) * exp(CR * dt));
@@ -272,15 +227,7 @@ seconds = ExecutionTime - hours*3600 - minutes*60;
 
 fprintf("ExecitionTime = %8.4f [h]   %8.4f [m]   %8.4f [s]\n", hours, minutes, seconds);
 
-% OUT.ZAxis(:,1) = ZAxis(IZ,1);
-% OUT.TAxis(:,1) = TAxisNew(:,1);
-
 fprintf(" \n\n");
-
-% if SHOW == 1
-%     close(hFig);
-% end
-
 end
 
 
