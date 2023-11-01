@@ -1,6 +1,6 @@
-function orotron(NNe, LLz, TTend, DDelta, Icc, ddz, ddt, tol) %#codegen
+function [OUTFre, OUTFim, OUTJre, OUTJim, OUTZAxis, OUTTAxis] = orotron(NNe, LLz, TTend, DDelta, Icc, ddz, ddt, tol) %#codegen
 
-if nargin < 7
+if nargin < 8
     fprintf('USAGE: orotron Ne Lz Tend Delta I dz dt\n')
 end
 
@@ -20,8 +20,8 @@ Ic = Icc;
 dz = ddz;
 dt = ddt;
 
-Nz = Lz/dz + 1;
-Nt = Tend/dt + 1;
+Nz = fix(Lz/dz) + 1;
+Nt = fix(Tend/dt) + 1;
 
 ZAxis = zeros(Nz, 1);
 TAxis = zeros(Nt, 1);
@@ -102,6 +102,11 @@ end
 %     save(fileResults,"RES","-v7.3");
     
     % Âûגמה ג .dat פאיכ    
+    OUTFre = real(OUTF);
+    OUTFim = imag(OUTF);
+    OUTJre = real(OUTJ);
+    OUTJim = imag(OUTJ);
+    
     OUTBvsZ = zeros(size(OUTF,1), 2*size(OUTF,2));
     OUTJvsZ = zeros(size(OUTJ,1), 2*size(OUTJ,2));
     OUTBvsZ(:,1:2:end-1) = real(OUTF);
@@ -134,7 +139,7 @@ end
     
     strParam = 'Ne = %d\nTend = %f\nLz = %f\nDelta = %f\nI = %f\ndz = %f\ndt = %f\n';
     fileID = fopen(fileParameters ,'wt');
-    fprintf(fileID, strParam, Ne, Tend, Lz, Delta, Ic, dz, dt);
+    fprintf(fileID, strParam, int64(Ne), Tend, Lz, Delta, Ic, dz, dt);
     fclose(fileID);    
     save(fileResultsBvsZ, 'OUTBvsZ', '-ascii');
     save(fileResultsJvsZ, 'OUTJvsZ', '-ascii');

@@ -1,7 +1,4 @@
 function [OUTB, OUTJ] = oroscr(Nz, Nt, Ne, ZAxis, TAxis, Delta, Ic, dt, dz, tol, INTT, INTZ, OUTNz, OUTNt, InitialField) %#codegen
-% function OUT = gyroscr(IN) %#codegen
-
-fprintf('\nTime')
 
 Field = complex(zeros(size(InitialField,1),1));
 WR = complex(zeros(length(TAxis)+1,1));
@@ -17,10 +14,10 @@ field = complex(zeros(length(Field),1));
 field_p = complex(zeros(length(Field),1));
 rfield_p = complex(zeros(length(Field),1));
 lfield_p = complex(zeros(length(Field),1));
-cu_p = zeros(length(ZAxis),1);
-cu = zeros(length(ZAxis),1);
-OUTB = zeros(OUTNz, OUTNt);
-OUTJ = zeros(OUTNz, OUTNt);
+cu_p = complex(zeros(length(ZAxis),1));
+cu = complex(zeros(length(ZAxis),1));
+OUTB = complex(zeros(OUTNz, OUTNt));
+OUTJ = complex(zeros(OUTNz, OUTNt));
 
 if INTZ > 1
     IZ = 0:INTZ:length(ZAxis);
@@ -45,10 +42,8 @@ SQRDT = sqrt(dt);
 SQRDZ = dz*dz;
 
 C0 = -1i;
-% C0 = 1i;
 CR = 0;
 C2 = 1.0D0/sqrt(1i*pi);
-% C2 = 1/sqrt(-1i*pi);
 WNz = -((2.0D0/3.0D0*C0*dz/dt + kpar2(end)*dz/3.0D0) - 1.0D0/dz);
 WNzm1 = -((C0/3.0D0*dz/dt + kpar2(end-1)*dz/6.0D0) + 1.0D0/dz);
 
@@ -201,7 +196,7 @@ for step=1:steps
         '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
         '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'...
         'Step = %8i   Time = %8.4f   Bmax = %15.10f   Jmax = %15.10f'],...
-        step, TAxis(k), fmax(k), max(abs(cu(:,1))));
+        int64(step), TAxis(k), fmax(k), max(abs(cu(:,1))));
 end
 
 OUTJ(:,jout) = cu(IZ,1);
